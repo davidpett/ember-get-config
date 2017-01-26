@@ -1,9 +1,7 @@
 /* jshint node: true */
 'use strict';
 
-var fs = require('fs');
-var path = require('path');
-var FileCreator = require('broccoli-file-creator');
+var writeFile = require('broccoli-file-creator');
 
 function findRoot(current) {
   var app;
@@ -13,7 +11,6 @@ function findRoot(current) {
   do {
     app = current.app || app;
   } while (current.parent && current.parent.parent && (current = current.parent));
-
   return app;
 }
 
@@ -22,9 +19,9 @@ module.exports = {
 
   treeForAddon: function() {
     var modulePrefix = findRoot(this).project.config(process.env.EMBER_ENV)['modulePrefix'];
-    var indexTree = new FileCreator(
+    var indexTree = writeFile(
       'index.js',
-      'export { default } from \'' + modulePrefix + '/config/environment\';'
+      `export { default } from '${modulePrefix}/config/environment';`
     );
 
     return this._super.treeForAddon.call(this, indexTree);
@@ -37,5 +34,6 @@ module.exports = {
     if (this._includedCount > 1) {
       findRoot(this).project.ui.writeDeprecateLine('`ember-get-config` previously recommended reinvoking the `included` hook, but that is no longer recommended. Please remove the additional invocation.');
     }
+    this._super(...arguments);
   }
 };
